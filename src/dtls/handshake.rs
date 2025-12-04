@@ -1,28 +1,37 @@
-use crate::dtls::common::ProtocolVersion;
+use bytes::{BufMut, BytesMut};
+
+use crate::dtls::common::{CipherSuite, ProtocolVersion};
 
 pub enum HandshakeType {
     ClientHello = 1,
     HelloVerifyRequest = 3,
 }
 
-struct Random {
-    gmt_unix_time: u32,
-    random_bytes: [u8; 28],
+pub struct Random {
+    pub gmt_unix_time: u32,
+    pub random_bytes: [u8; 28],
 }
 
-enum CompressionMethod {
+pub enum CompressionMethod {
     Null,
 }
 
-struct Cookie(pub [u8; 32]);
+pub struct Cookie(pub [u8; 32]);
 
 pub struct ClientHello {
-    client_version: ProtocolVersion,
-    random: Random,
-    session_id: u32,
-    cookie: Cookie,
-    cipher_suites: [u16; 16],
-    compression_method: Vec<CompressionMethod>,
+    pub client_version: ProtocolVersion,
+    pub random: Random,
+    pub session_id: u32,
+    pub cookie: Cookie,
+    pub cipher_suites: CipherSuite, // [u16; 16],
+    pub compression_methods: Vec<CompressionMethod>,
+}
+
+impl ClientHello {
+    pub fn write(&self, buf: &mut BytesMut) {
+        buf.put_u8(self.client_version.major);
+        buf.put_u8(self.client_version.minor);
+    }
 }
 
 pub struct HelloVerifyRequest {
